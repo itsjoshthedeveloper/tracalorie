@@ -44,12 +44,21 @@ const ItemCtrl = (function () {
       data.items.forEach((item) => {
         if (item.id === itemID) {
           data.currentItem = item;
-          console.log('ItemCtrl -> data.currentItem', data.currentItem);
         }
       });
     },
     getCurrentItem: function () {
       return data.currentItem;
+    },
+    updateItem: function (name, calories) {
+      data.items.forEach((item) => {
+        if (item.id === data.currentItem.id) {
+          item.name = name;
+          item.calories = calories;
+          console.log('ItemCtrl -> item', item);
+          data.currentItem = item;
+        }
+      });
     },
     logData: function () {
       console.log(data);
@@ -128,6 +137,14 @@ const UICtrl = (function () {
       UISelectors.deleteBtn.style.display = 'inline';
       UISelectors.backBtn.style.display = 'inline';
     },
+    updateItem: function (item) {
+      document.querySelector(`#item-${item.id}`).innerHTML = `
+        <strong>${item.name}: </strong><em>${item.calories} Calories</em>
+        <a href="#" class="secondary-content">
+          <i class="edit-item fa fa-pencil"></i>
+        </a>
+      `;
+    },
     getUISelectors: function () {
       return UISelectors;
     },
@@ -143,8 +160,17 @@ const App = (function (ItemCtrl, UICtrl) {
   const loadEventListeners = function () {
     // Get UI selectors
     const UISelectors = UICtrl.getUISelectors();
+    // Event listeners
     UISelectors.addBtn.addEventListener('click', addItem);
+    UISelectors.updateBtn.addEventListener('click', updateItem);
     UISelectors.itemList.addEventListener('click', editItem);
+    // Disable submit on enter
+    document.addEventListener('keypress', (e) => {
+      if (e.keyCode === 13 || e.which === 13) {
+        e.preventDefault();
+        return false;
+      }
+    });
   };
 
   // Add item to data structure
@@ -174,6 +200,16 @@ const App = (function (ItemCtrl, UICtrl) {
       ItemCtrl.setCurrentItem(itemID);
       UICtrl.showEditState(ItemCtrl.getCurrentItem());
     }
+  };
+
+  // Update item
+  const updateItem = function (e) {
+    const input = UICtrl.getItemInput();
+    ItemCtrl.updateItem(input.name, input.calories);
+    UICtrl.updateItem(ItemCtrl.getCurrentItem());
+    UICtrl.clearEditState();
+    UICtrl.updateTotalCalories(ItemCtrl.getTotalCalories());
+    e.preventDefault();
   };
 
   return {
