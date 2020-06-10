@@ -1,3 +1,15 @@
+// Storage Controller
+const StorageCtrl = (function () {
+  return {
+    storeItems: function (items) {
+      localStorage.setItem('items', JSON.stringify(items));
+    },
+    getItems: function () {
+      return JSON.parse(localStorage.getItem('items'));
+    },
+  };
+})();
+
 // Item Controller
 const ItemCtrl = (function () {
   // Item constructor
@@ -72,6 +84,9 @@ const ItemCtrl = (function () {
     },
     clearItems: function () {
       data.items = [];
+    },
+    setItems: function (items) {
+      data.items = items;
     },
     logData: function () {
       console.log(data);
@@ -175,7 +190,7 @@ const UICtrl = (function () {
 })();
 
 // App Controller
-const App = (function (ItemCtrl, UICtrl) {
+const App = (function (StorageCtrl, ItemCtrl, UICtrl) {
   // Load event listeners
   const loadEventListeners = function () {
     // Get UI selectors
@@ -209,6 +224,8 @@ const App = (function (ItemCtrl, UICtrl) {
       UICtrl.updateTotalCalories(ItemCtrl.getTotalCalories());
       // Clear inputs
       UICtrl.clearInputs();
+      // Store items
+      StorageCtrl.storeItems(ItemCtrl.getItems());
     }
     e.preventDefault();
   };
@@ -230,6 +247,7 @@ const App = (function (ItemCtrl, UICtrl) {
     ItemCtrl.updateItem(input.name, input.calories);
     UICtrl.updateItem(ItemCtrl.getCurrentItem());
     exitEditState();
+    StorageCtrl.storeItems(ItemCtrl.getItems());
     e.preventDefault();
   };
 
@@ -243,6 +261,7 @@ const App = (function (ItemCtrl, UICtrl) {
       // Hide item list
       UICtrl.hideList();
     }
+    StorageCtrl.storeItems(ItemCtrl.getItems());
     e.preventDefault();
   };
 
@@ -252,6 +271,7 @@ const App = (function (ItemCtrl, UICtrl) {
     UICtrl.clearItems();
     exitEditState();
     UICtrl.hideList();
+    StorageCtrl.storeItems(ItemCtrl.getItems());
     e.preventDefault();
   };
 
@@ -273,6 +293,11 @@ const App = (function (ItemCtrl, UICtrl) {
     init: function () {
       // Clear edit state
       UICtrl.clearEditState();
+      // Get items from local storage
+      if (StorageCtrl.getItems()) {
+        ItemCtrl.setItems(StorageCtrl.getItems());
+      }
+      const items = ItemCtrl.getItems();
       if (checkList()) {
         // Hide item list
         UICtrl.hideList();
@@ -286,7 +311,7 @@ const App = (function (ItemCtrl, UICtrl) {
       loadEventListeners();
     },
   };
-})(ItemCtrl, UICtrl);
+})(StorageCtrl, ItemCtrl, UICtrl);
 
 // Initialize app
 App.init();
