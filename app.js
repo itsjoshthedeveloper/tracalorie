@@ -28,8 +28,14 @@ const ItemCtrl = (function () {
       }
       // Create new Item
       const newItem = new Item(ID, name, calories);
+      // Add to data structure
       data.items.push(newItem);
+      // Add to total calories
+      data.totalCalories += calories;
       return newItem;
+    },
+    getTotalCalories: function () {
+      return data.totalCalories;
     },
     logData: function () {
       console.log(data);
@@ -44,7 +50,9 @@ const UICtrl = (function () {
     addBtn: document.querySelector('.add-btn'),
     itemName: document.querySelector('#item-name'),
     itemCalories: document.querySelector('#item-calories'),
+    totalCalories: document.querySelector('.total-calories'),
   };
+
   return {
     populateItemsList: function (items) {
       let html = '';
@@ -83,6 +91,9 @@ const UICtrl = (function () {
       UISelectors.itemName.value = '';
       UISelectors.itemCalories.value = '';
     },
+    updateTotalCalories: function (totalCalories) {
+      UISelectors.totalCalories.textContent = String(totalCalories);
+    },
     getUISelectors: function () {
       return UISelectors;
     },
@@ -110,6 +121,8 @@ const App = (function (ItemCtrl, UICtrl) {
       const newItem = ItemCtrl.addItem(input.name, input.calories);
       // Add item to UI
       UICtrl.addItem(newItem);
+      // Update total calories
+      UICtrl.updateTotalCalories(ItemCtrl.getTotalCalories());
       // Clear inputs
       UICtrl.clearInputs();
     }
@@ -120,7 +133,6 @@ const App = (function (ItemCtrl, UICtrl) {
     init: function () {
       // Get items from data structure
       const items = ItemCtrl.getItems();
-
       if (items.length === 0) {
         // Hide item list
         UICtrl.hideList();
@@ -128,7 +140,8 @@ const App = (function (ItemCtrl, UICtrl) {
         // Populate item list with items
         UICtrl.populateItemsList(items);
       }
-
+      // Update total calories
+      UICtrl.updateTotalCalories(ItemCtrl.getTotalCalories());
       // Load listeners
       loadEventListeners();
     },
