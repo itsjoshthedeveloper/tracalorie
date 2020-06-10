@@ -9,7 +9,7 @@ const ItemCtrl = (function () {
 
   // Data structure / state
   const data = {
-    items: [{ id: 0, name: 'Boba', calories: 300 }],
+    items: [],
     currentItem: null,
     totalCalories: 0,
   };
@@ -26,7 +26,10 @@ const ItemCtrl = (function () {
       } else {
         ID = 0;
       }
-      data.items.push(new Item(ID, name, calories));
+      // Create new Item
+      const newItem = new Item(ID, name, calories);
+      data.items.push(newItem);
+      return newItem;
     },
     logData: function () {
       console.log(data);
@@ -63,8 +66,28 @@ const UICtrl = (function () {
         calories: parseInt(UISelectors.itemCalories.value),
       };
     },
+    addItem: function (item) {
+      UISelectors.itemList.style.display = 'block';
+      const li = document.createElement('li');
+      li.className = 'collection-item';
+      li.id = `item-${item.id}`;
+      li.innerHTML = `
+        <strong>${item.name}: </strong><em>${item.calories} Calories</em>
+        <a href="#" class="secondary-content">
+          <i class="edit-item fa fa-pencil"></i>
+        </a>
+      `;
+      UISelectors.itemList.insertAdjacentElement('beforeend', li);
+    },
+    clearInputs: function () {
+      UISelectors.itemName.value = '';
+      UISelectors.itemCalories.value = '';
+    },
     getUISelectors: function () {
       return UISelectors;
+    },
+    hideList: function () {
+      UISelectors.itemList.style.display = 'none';
     },
   };
 })();
@@ -84,8 +107,11 @@ const App = (function (ItemCtrl, UICtrl) {
     const input = UICtrl.getItemInput();
     if (input.name !== '' && input.calories !== '') {
       // Add item to data
-      ItemCtrl.addItem(input.name, input.calories);
-      ItemCtrl.logData();
+      const newItem = ItemCtrl.addItem(input.name, input.calories);
+      // Add item to UI
+      UICtrl.addItem(newItem);
+      // Clear inputs
+      UICtrl.clearInputs();
     }
     e.preventDefault();
   };
@@ -95,8 +121,13 @@ const App = (function (ItemCtrl, UICtrl) {
       // Get items from data structure
       const items = ItemCtrl.getItems();
 
-      // Populate item list with items
-      UICtrl.populateItemsList(items);
+      if (items.length === 0) {
+        // Hide item list
+        UICtrl.hideList();
+      } else {
+        // Populate item list with items
+        UICtrl.populateItemsList(items);
+      }
 
       // Load listeners
       loadEventListeners();
